@@ -1,31 +1,66 @@
-use btech_rs::import::*;
-use std::{fs, ops::Index, path::PathBuf};
+use std::{
+    collections::{hash_map, HashMap},
+    fs,
+    path::PathBuf,
+};
 
-fn main() {
-    // let folder = "C:\\Users\\peter\\Repos\\Battletech\\megamek\\megamek\\data\\mechfiles";
-    let folder = "C:\\Users\\peter\\Repos\\Battletech\\megamek\\megamek\\data\\mechfiles\\mechs\\3039u\\Zeus ZEU-6T.mtf";
-    let total_read = handle_path(folder);
-    println!("total files read: {}", total_read);
-    // let val = fs::read_to_string(path)
+#[derive(Debug)]
+pub struct FileImport {
+    entries: HashMap<String, FileEntry>,
 }
 
-fn handle_path(path: &str) -> i32 {
+impl FileImport {
+    pub fn new() -> Self {
+        Self {
+            entries: hash_map::HashMap::new(),
+        }
+    }
+    pub fn add_entry(&mut self, k: String, v: FileEntry) {
+        self.entries.insert(k, v);
+    }
+}
+
+#[derive(Debug)]
+pub enum FileEntry {
+    Single(String),
+    Block(Block),
+    Empty,
+}
+#[derive(Debug)]
+pub enum BlockEntry {
+    Str(String),
+}
+#[derive(Debug)]
+pub struct Block {
+    entries: Vec<BlockEntry>,
+}
+
+impl Block {
+    pub fn new(entries: Vec<BlockEntry>) -> Self {
+        Self { entries }
+    }
+}
+pub fn handle_path(path: &str) -> i32 {
     let mut read = 0;
-    match fs::metadata(path){
+    match fs::metadata(path) {
         Ok(r) => {
-            if r.is_file() { 
-                match fs::read_dir(PathBuf::from(path).parent().unwrap()){
+            if r.is_file() {
+                match fs::read_dir(PathBuf::from(path).parent().unwrap()) {
                     Ok(mut rd) => {
                         while let Some(Ok(f)) = rd.next() {
                             if f.path().to_str().unwrap() == path {
-                                parse_file(&f,&mut read);
+                                parse_file(&f, &mut read);
                             }
                         }
                         read
                     }
                     Err(_) => todo!(),
                 }
-            } else if r.is_dir() {read_dir(path)} else {read}
+            } else if r.is_dir() {
+                read_dir(path)
+            } else {
+                read
+            }
         }
         Err(_) => todo!(),
     }
@@ -89,7 +124,7 @@ fn parse_mtf_file(file_str: String) -> Option<FileImport> {
             if let Some(idx) = line.find(":") {
                 file.add_entry(
                     line[0..idx].to_string(),
-                    FileEntry::Single(line[idx+1..].to_string()),
+                    FileEntry::Single(line[idx + 1..].to_string()),
                 )
             }
         }

@@ -2,48 +2,9 @@ use control::Player;
 use units::Unit;
 
 mod control;
+pub mod import;
 mod units;
 
-pub mod import {
-    use std::collections::{hash_map, HashMap};
-
-    #[derive(Debug)]
-    pub struct FileImport {
-        entries: HashMap<String, FileEntry>,
-    }
-
-    impl FileImport {
-        pub fn new() -> Self {
-            Self {
-                entries: hash_map::HashMap::new(),
-            }
-        }
-        pub fn add_entry(&mut self, k: String, v: FileEntry) {
-            self.entries.insert(k, v);
-        }
-    }
-
-    #[derive(Debug)]
-    pub enum FileEntry {
-        Single(String),
-        Block(Block),
-        Empty,
-    }
-    #[derive(Debug)]
-    pub enum BlockEntry {
-        Str(String),
-    }
-    #[derive(Debug)]
-    pub struct Block {
-        entries: Vec<BlockEntry>,
-    }
-
-    impl Block {
-        pub fn new(entries: Vec<BlockEntry>) -> Self {
-            Self { entries }
-        }
-    }
-}
 pub enum TurnPhase {
     InitiativePhase,
     MovementPhase(MovementSubphase),
