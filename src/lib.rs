@@ -4,6 +4,9 @@ use units::Unit;
 mod control;
 pub mod import;
 mod units;
+pub mod random;
+pub mod movement;
+
 
 pub enum TurnPhase {
     InitiativePhase,
@@ -49,7 +52,7 @@ impl Side {
     }
 }
 
-mod game {
+pub mod game {
     use super::Side;
 
     pub struct Game {
@@ -61,7 +64,7 @@ mod game {
     impl Game {
         /// Creates a new [`Game`].
         /// ```
-        /// use btech_rs::{Game, Side};
+        /// use btech_rs::{game::Game, Side};
         /// let s = Side::new("name".to_string(), vec![], vec![], vec![]);
         /// let g = Game::new("Test Game".to_string(), "Just a test".to_string(), vec![s]);
         /// if let None = g.get_side(0) { assert!(false) }
