@@ -6,6 +6,7 @@ pub mod import;
 mod units;
 pub mod random;
 pub mod movement;
+pub mod components;
 
 
 pub enum TurnPhase {
