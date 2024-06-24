@@ -1,6 +1,6 @@
 use bevy::prelude::Component;
 
-use crate::units::{Infantry, Unit, Vehicle};
+use crate::units::Unit;
 
 pub enum MoveMode {
     Walk,
@@ -9,7 +9,7 @@ pub enum MoveMode {
     Cruise,
     Flank,
 }
-
+#[derive(Debug)]
 pub enum MoveType {
     Mech,
     Wheeled,
@@ -34,14 +34,14 @@ pub enum MoveAction {
     Descend,
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Facing {
-    North,
-    NorthEast,
     SouthEast,
     South,
     SouthWest,
     NorthWest,
+    North,
+    NorthEast,
 }
 
 #[derive(Clone, Component)]
@@ -67,16 +67,52 @@ pub enum MoveCost {
 
 pub struct Coord(i32, i32);
 
+#[derive(Component)]
+pub enum Level {
+    Height(i8),
+    Elevation(i8),
+    Altitude(i8),
+    Depth(i8),
+}
+
+type HexTypeLevel = (HexType, Level);
+
+pub enum HexError {
+    ElevationNotAllowed(&'static str),
+    AltitudeNotAllowed(&'static str),
+}
+
 pub struct Hex {
     hex_type: HexType,
-    level: i8,
+    level: Level,
     x: i32,
     y: i32,
 }
+
 impl Hex {
     fn try_move_into(&self, unit: Unit) -> MoveCost {
         let veh_move_type = unit.get_move_type();
         move_cost_to_hex_type(self.hex_type.clone(), veh_move_type, unit.get_facing())
+    }
+
+    pub fn from_components(x: i32, y: i32, hex_type_level: HexTypeLevel) -> Result<Hex, HexError> {
+        if let Level::Elevation(h) = hex_type_level.1 {
+            Err(HexError::ElevationNotAllowed(
+                "Hexes don't have Elevations, only Height or Depth.",
+            ))
+        } else if let Level::Altitude(a) = hex_type_level.1 {
+            Err(HexError::AltitudeNotAllowed(
+                "Hexes don't have Altitude except in aero maps, which are not yet implemented.",
+            ))
+        } else {
+            let (hex_type, level) = hex_type_level;
+            Ok(Hex {
+                hex_type,
+                level,
+                x,
+                y,
+            })
+        }
     }
 }
 
@@ -167,7 +203,7 @@ pub mod map {
 
     use super::{Coord, Hex};
     pub struct Map {
-        hexes: HashMap<Coord, Hex>,
+        pub hexes: HashMap<Coord, Hex>,
     }
     impl Map {
         pub fn new(size: Coord) -> Self {

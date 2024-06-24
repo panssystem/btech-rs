@@ -9,12 +9,20 @@ use crate::movement::{Facing, MoveMode, MoveType};
 //     fn get_altitude(&self) -> Option<i8>;
 //     fn get_unit(&self) -> &Unit;
 // }
-
+#[derive(Debug)]
 pub enum VehicleType {
     Combat,
     Support,
 }
-pub enum Unit {
+
+#[derive(Debug)]
+pub struct Unit {
+    unit_type: UnitType,
+    facing: Facing, 
+}
+
+#[derive(Debug)]
+pub enum UnitType {
     Mech(BattleMech),
     BattleArmor(BattleArmor),
     Infantry(Infantry),
@@ -55,40 +63,50 @@ impl Unit {
     }
 }
 
+#[derive(Debug)]
 pub struct BattleMech {
     // name: String,
 }
 
+#[derive(Debug)]
 pub struct ProtoMech {
     // name: String,
 }
 
+#[derive(Debug)]
 pub struct Vehicle {
     name: String,
     vehicle_type: VehicleType,
     movement_mode: MoveType,
 }
 
+#[derive(Debug)]
 pub struct Infantry {
     // name: String,
 }
 
+#[derive(Debug)]
 pub struct BattleArmor {
     // name: String,
 }
 
+#[derive(Debug)]
 pub struct Fighter {
     // name: String,
 }
 
+#[derive(Debug)]
 pub struct SmallCraft {
     // name: String,
 }
 
+#[derive(Debug)]
 pub struct DropShip {
     // name: String,
 }
-
+#[derive(Debug)]
 pub struct JumpShip {}
+#[derive(Debug)]
 pub struct WarShip {}
+#[derive(Debug)]
 pub struct SpaceStation {}

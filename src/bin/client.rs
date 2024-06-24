@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 use bevy::{
     prelude::*,
@@ -7,20 +7,28 @@ use bevy::{
         render_asset::RenderAssetUsages,
     },
     window::PrimaryWindow,
+    winit::WinitSettings,
 };
+#[cfg(feature = "debug")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+
 use btech_rs::{
-    components::{Height, Water},
-    movement::HexType,
+    components::Height, constants::*, movement:: HexType, resources::*, systems::*
 };
 use hexx::{Hex, HexLayout, OffsetHexMode, PlaneMeshBuilder};
 
-const HEX_SIZE: Vec2 = Vec2::splat(26.0);
-const OFFSET_HEX_MODE: OffsetHexMode = OffsetHexMode::EvenColumns;
-
 fn main() {
-    App::new()
+    let mut binding = App::new();
+    let app = binding
         .init_resource::<Highlighted>()
+        .insert_resource(WinitSettings {
+            focused_mode: bevy::winit::UpdateMode::ReactiveLowPower {
+                wait: Duration::from_millis(50),
+            },
+            unfocused_mode: bevy::winit::UpdateMode::ReactiveLowPower {
+                wait: Duration::from_millis(1000),
+            },
+        })
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 resolution: (1000.0, 1000.0).into(),
@@ -28,27 +36,25 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins(WorldInspectorPlugin::new())
         .add_systems(
             Startup,
             (setup_camera, setup_grid, draw_grid.after(setup_grid)),
         )
-        .add_systems(Update, handle_clicks)
-        .run();
+        .add_systems(Update, handle_hover);
+
+    if cfg!(feature = "debug") {
+        add_world_inspector(app);
+    }
+    app.run();
 }
 
-#[derive(Debug, Default, Resource)]
-struct Highlighted {
-    hovered: Hex,
+#[cfg(feature = "debug")]
+fn add_world_inspector(app: App) -> App {
+    app.add_plugins(WorldInspectorPlugin::new())
 }
 
-#[derive(Debug, Resource)]
-struct Map {
-    layout: HexLayout,
-    entities: HashMap<Hex, Entity>,
-    bare_material: Handle<ColorMaterial>,
-    highlighted_material: Handle<ColorMaterial>,
-}
+#[cfg(not(feature = "debug"))]
+fn add_world_inspector(_app: &mut App) {}
 
 fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle {
@@ -147,8 +153,8 @@ fn hexagonal_plane(hex_layout: &HexLayout) -> Mesh {
     .with_inserted_indices(Indices::U16(mesh_info.indices))
 }
 
-fn draw_grid(mut commands: Commands, hexes: Query<(Entity, &Height, Option<&HexType>)>) {
-    for (e, height, water) in &hexes {
+fn draw_grid(mut commands: Commands, hexes: Query<(Entity, &Height, &HexType)>) {
+    for (e, height, hex_type) in &hexes {
         if height.0 != 0 {
             commands.entity(e).with_children(|b| {
                 b.spawn(Text2dBundle {
@@ -165,11 +171,11 @@ fn draw_grid(mut commands: Commands, hexes: Query<(Entity, &Height, Option<&HexT
                 });
             });
         }
-        if let Some(HexType::Water(_, h)) = water {
+        if let HexType::Water(_, h) = hex_type {
             commands.entity(e).with_children(|b| {
                 b.spawn(Text2dBundle {
                     text: Text::from_section(
-                        format!("Depth {}", 1,),
+                        format!("Depth {}", h,),
                         TextStyle {
                             font_size: 9.0,
                             color: Color::BLACK,
@@ -180,43 +186,6 @@ fn draw_grid(mut commands: Commands, hexes: Query<(Entity, &Height, Option<&HexT
                     ..default()
                 });
             });
-        }
-    }
-}
-fn handle_clicks(
-    mut commands: Commands,
-    windows: Query<&Window, With<PrimaryWindow>>,
-    cameras: Query<(&Camera, &GlobalTransform)>,
-    map: Res<Map>,
-    mut highlighted_hexes: ResMut<Highlighted>,
-) {
-    let window = windows.single();
-    let (camera, cam_transform) = cameras.single();
-    if let Some(pos) = window
-        .cursor_position()
-        .and_then(|p| camera.viewport_to_world_2d(cam_transform, p))
-    {
-        let coord = map.layout.world_pos_to_hex(pos);
-        if coord == highlighted_hexes.hovered {
-            return;
-        }
-        info!(
-            "{:?}, {:?}, {:?}",
-            coord.to_offset_coordinates(OFFSET_HEX_MODE),
-            coord,
-            pos
-        );
-        // clear last hex highlighting.
-        if let Some(entity) = map.entities.get(&highlighted_hexes.hovered) {
-            commands
-                .entity(*entity)
-                .insert(map.bare_material.clone_weak());
-        }
-        highlighted_hexes.hovered = coord;
-        if let Some(entity) = map.entities.get(&coord).copied() {
-            commands
-                .entity(entity)
-                .insert(map.highlighted_material.clone_weak());
         }
     }
 }

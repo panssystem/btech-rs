@@ -1,5 +1,3 @@
-use std::{fs, ops::Index, path::PathBuf};
-
 use btech_rs::import::handle_path;
 
 fn main() {
