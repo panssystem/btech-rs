@@ -62,7 +62,7 @@ pub fn handle_path(path: &str) -> i32 {
                 read
             }
         }
-        Err(_) => todo!(),
+        Err(e) => todo!("{:#?}", e),
     }
 }
 fn read_dir(folder: &str) -> i32 {
@@ -103,7 +103,7 @@ fn parse_file(f: &fs::DirEntry, read: &mut i32) {
 
 fn parse_mtf_file(file_str: String) -> Option<FileImport> {
     let mut file = FileImport::new();
-    let mut lines = file_str.split("\r\n");
+    let mut lines = file_str.lines();
     while let Some(line) = lines.next() {
         if line.is_empty() || line.starts_with("#") {
             continue;
@@ -135,7 +135,7 @@ fn parse_mtf_file(file_str: String) -> Option<FileImport> {
 
 fn parse_blk_file(file_str: String) -> Option<FileImport> {
     let mut file = FileImport::new();
-    let mut lines = file_str.split("\r\n");
+    let mut lines = file_str.lines();
     while let Some(line) = lines.next() {
         if line.is_empty() || line.trim().starts_with("#") {
             continue;
