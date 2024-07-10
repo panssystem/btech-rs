@@ -7,6 +7,6 @@ fn main() {
     .run();
 }
 
-fn setup(mut commands: Commands) {
+fn setup(_commands: Commands) {
     // commands.spawn(Camera2dBundle::default());
 }

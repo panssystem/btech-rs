@@ -1,4 +1,4 @@
-use bevy::{prelude::Component, window::WindowLevel};
+use bevy::{prelude::Component};
 
 use crate::units::Unit;
 
@@ -159,11 +159,11 @@ impl Hex {
     }
 
     pub fn from_components(x: i32, y: i32, hex_type_level: HexTypeLevel) -> Result<Hex, HexError> {
-        if let Level::Elevation(h) = hex_type_level.1 {
+        if let Level::Elevation(_h) = hex_type_level.1 {
             Err(HexError::ElevationNotAllowed(
                 "Hexes don't have Elevations, only Height or Depth.",
             ))
-        } else if let Level::Altitude(a) = hex_type_level.1 {
+        } else if let Level::Altitude(_a) = hex_type_level.1 {
             Err(HexError::AltitudeNotAllowed(
                 "Hexes don't have Altitude except in aero maps, which are not yet implemented.",
             ))
@@ -182,7 +182,7 @@ impl Hex {
 fn move_cost_to_hex_type(hex_type: HexType, veh_move_type: MoveType, facing: &Facing) -> MoveCost {
     match hex_type {
         HexType::Clear => move_clear_or_paved(veh_move_type),
-        HexType::Paved(facings) => move_clear_or_paved(veh_move_type),
+        HexType::Paved(_facings) => move_clear_or_paved(veh_move_type),
         HexType::Rough(road_facings) => match road_facings {
             Some(facings) if facings.contains(facing) => move_clear_or_paved(veh_move_type),
             _ => move_rough_or_rubble(veh_move_type),
@@ -213,7 +213,7 @@ fn move_cost_to_hex_type(hex_type: HexType, veh_move_type: MoveType, facing: &Fa
                 _ => MoveCost::Allowed(3),
             },
         },
-        HexType::Water(road_facings, depth) => match road_facings {
+        HexType::Water(road_facings, _depth) => match road_facings {
             Some(facings) if facings.contains(facing) => move_clear_or_paved(veh_move_type),
             _ => todo!(),
         },
