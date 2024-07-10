@@ -1,4 +1,4 @@
-use std::{collections::HashMap, time::Duration};
+use std::time::Duration;
 
 use bevy::{
     prelude::*,
@@ -6,16 +6,15 @@ use bevy::{
         mesh::{Indices, PrimitiveTopology},
         render_asset::RenderAssetUsages,
     },
-    window::PrimaryWindow,
     winit::WinitSettings,
 };
 #[cfg(feature = "debug")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use btech_rs::{
-    components::Height, constants::*, movement:: HexType, resources::*, systems::*
+    constants::*, movement::{ HexType, Level}, resources::*, systems::*
 };
-use hexx::{Hex, HexLayout, OffsetHexMode, PlaneMeshBuilder};
+use hexx::{Hex, HexLayout, PlaneMeshBuilder};
 
 fn main() {
     let mut binding = App::new();
@@ -104,7 +103,7 @@ fn setup_grid(
                         ..default()
                     },
                     HexType::Water(None, 1),
-                    Height(hex.x - 6),
+                    Level::Height(hex.x - 6),
                 ))
                 .with_children(|b| {
                     b.spawn(Text2dBundle {
@@ -153,13 +152,15 @@ fn hexagonal_plane(hex_layout: &HexLayout) -> Mesh {
     .with_inserted_indices(Indices::U16(mesh_info.indices))
 }
 
-fn draw_grid(mut commands: Commands, hexes: Query<(Entity, &Height, &HexType)>) {
+fn draw_grid(mut commands: Commands, hexes: Query<(Entity, &Level, &HexType)>) {
     for (e, height, hex_type) in &hexes {
-        if height.0 != 0 {
+        match height {
+            Level::Height(0) => (), // Don't show height if it's 0.
+            Level::Height(h) => {
             commands.entity(e).with_children(|b| {
                 b.spawn(Text2dBundle {
                     text: Text::from_section(
-                        format!("Height {}", height.0,),
+                        format!("Height {}", h,),
                         TextStyle {
                             font_size: 9.0,
                             color: Color::BLACK,
@@ -171,6 +172,8 @@ fn draw_grid(mut commands: Commands, hexes: Query<(Entity, &Height, &HexType)>) 
                 });
             });
         }
+        _ => ()
+    }
         if let HexType::Water(_, h) = hex_type {
             commands.entity(e).with_children(|b| {
                 b.spawn(Text2dBundle {
