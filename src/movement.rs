@@ -1,4 +1,4 @@
-use bevy::{prelude::Component};
+use bevy::prelude::Component;
 
 use crate::units::Unit;
 
@@ -94,10 +94,10 @@ pub enum LevelLookup {
 }
 
 impl TryInto<Level> for LevelLookup {
-    type Error= &'static str;
+    type Error = &'static str;
 
     fn try_into(self) -> Result<Level, Self::Error> {
-    const ERROR_MESSAGE: &'static str = "Cannot convert wildcard.";
+        const ERROR_MESSAGE: &'static str = "Cannot convert wildcard.";
         match self {
             LevelLookup::Altitude(LevelValue::Wildcard) => Err(ERROR_MESSAGE),
             LevelLookup::Height(LevelValue::Wildcard) => Err(ERROR_MESSAGE),
@@ -106,7 +106,7 @@ impl TryInto<Level> for LevelLookup {
             LevelLookup::Altitude(LevelValue::Val(v)) => Ok(Level::Altitude(v)),
             LevelLookup::Depth(LevelValue::Val(v)) => Ok(Level::Depth(v)),
             LevelLookup::Elevation(LevelValue::Val(v)) => Ok(Level::Elevation(v)),
-            LevelLookup::Height(LevelValue::Val(v)) => Ok(Level::Height(v))
+            LevelLookup::Height(LevelValue::Val(v)) => Ok(Level::Height(v)),
         }
     }
 }
@@ -117,7 +117,7 @@ impl From<Level> for LevelLookup {
             Level::Altitude(v) => LevelLookup::Altitude(LevelValue::Val(v)),
             Level::Depth(v) => LevelLookup::Depth(v.into()),
             Level::Elevation(v) => LevelLookup::Elevation(v.into()),
-            Level::Height(v) => LevelLookup::Height(v.into())
+            Level::Height(v) => LevelLookup::Height(v.into()),
         }
     }
 }
@@ -126,12 +126,14 @@ impl PartialEq for LevelLookup {
     // Wildcard only works for the left side...
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
-            (Self::Height(LevelValue::Wildcard),Self::Height(_)) => true,
-            (Self::Elevation(LevelValue::Wildcard),Self::Elevation(_)) => true,
-            (Self::Altitude(LevelValue::Wildcard),Self::Altitude(_)) => true,
-            (Self::Depth(LevelValue::Wildcard),Self::Depth(_)) => true,
+            (Self::Height(LevelValue::Wildcard), Self::Height(_)) => true,
+            (Self::Elevation(LevelValue::Wildcard), Self::Elevation(_)) => true,
+            (Self::Altitude(LevelValue::Wildcard), Self::Altitude(_)) => true,
+            (Self::Depth(LevelValue::Wildcard), Self::Depth(_)) => true,
             (Self::Height(LevelValue::Val(l0)), Self::Height(LevelValue::Val(r0))) => l0 == r0,
-            (Self::Elevation(LevelValue::Val(l0)), Self::Elevation(LevelValue::Val(r0))) => l0 == r0,
+            (Self::Elevation(LevelValue::Val(l0)), Self::Elevation(LevelValue::Val(r0))) => {
+                l0 == r0
+            }
             (Self::Altitude(LevelValue::Val(l0)), Self::Altitude(LevelValue::Val(r0))) => l0 == r0,
             (Self::Depth(LevelValue::Val(l0)), Self::Depth(LevelValue::Val(r0))) => l0 == r0,
             _ => false,

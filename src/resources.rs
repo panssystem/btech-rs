@@ -1,4 +1,9 @@
-use bevy::{asset::Handle, prelude::{Entity, Resource}, sprite::ColorMaterial, utils::HashMap};
+use bevy::{
+    asset::Handle,
+    prelude::{Entity, Resource},
+    sprite::ColorMaterial,
+    utils::HashMap,
+};
 use hexx::{Hex, HexLayout};
 
 use crate::units::Unit;

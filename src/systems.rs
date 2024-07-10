@@ -1,6 +1,9 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 
-use crate::{constants::OFFSET_HEX_MODE, resources::{Highlighted, Map}};
+use crate::{
+    constants::OFFSET_HEX_MODE,
+    resources::{Highlighted, Map},
+};
 
 pub fn handle_hover(
     mut commands: Commands,

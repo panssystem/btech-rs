@@ -12,7 +12,10 @@ use bevy::{
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use btech_rs::{
-    constants::*, movement::{ HexType, Level}, resources::*, systems::*
+    constants::*,
+    movement::{HexType, Level},
+    resources::*,
+    systems::*,
 };
 use hexx::{Hex, HexLayout, PlaneMeshBuilder};
 
@@ -157,23 +160,23 @@ fn draw_grid(mut commands: Commands, hexes: Query<(Entity, &Level, &HexType)>) {
         match height {
             Level::Height(0) => (), // Don't show height if it's 0.
             Level::Height(h) => {
-            commands.entity(e).with_children(|b| {
-                b.spawn(Text2dBundle {
-                    text: Text::from_section(
-                        format!("Height {}", h,),
-                        TextStyle {
-                            font_size: 9.0,
-                            color: Color::BLACK,
-                            ..default()
-                        },
-                    ),
-                    transform: Transform::from_xyz(0.0, -10.0, 10.0),
-                    ..default()
+                commands.entity(e).with_children(|b| {
+                    b.spawn(Text2dBundle {
+                        text: Text::from_section(
+                            format!("Height {}", h,),
+                            TextStyle {
+                                font_size: 9.0,
+                                color: Color::BLACK,
+                                ..default()
+                            },
+                        ),
+                        transform: Transform::from_xyz(0.0, -10.0, 10.0),
+                        ..default()
+                    });
                 });
-            });
+            }
+            _ => (),
         }
-        _ => ()
-    }
         if let HexType::Water(_, h) = hex_type {
             commands.entity(e).with_children(|b| {
                 b.spawn(Text2dBundle {

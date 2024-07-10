@@ -1,16 +1,15 @@
 use control::Player;
 use units::Unit;
 
+pub mod components;
+pub mod constants;
 mod control;
 pub mod import;
-mod units;
-pub mod random;
 pub mod movement;
-pub mod components;
-pub mod systems;
-pub mod constants;
+pub mod random;
 pub mod resources;
-
+pub mod systems;
+mod units;
 
 pub enum TurnPhase {
     InitiativePhase,

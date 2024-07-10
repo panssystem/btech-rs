@@ -18,7 +18,7 @@ pub enum VehicleType {
 #[derive(Debug)]
 pub struct Unit {
     unit_type: UnitType,
-    facing: Facing, 
+    facing: Facing,
 }
 
 #[derive(Debug)]
