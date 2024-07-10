@@ -1,6 +1,5 @@
-use bevy::prelude::Component;
-
 use crate::units::Unit;
+use bevy::prelude::Component;
 
 pub enum MoveMode {
     Walk,
