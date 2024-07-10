@@ -1,4 +1,4 @@
-use bevy::prelude::Component;
+use bevy::{prelude::Component, window::WindowLevel};
 
 use crate::units::Unit;
 
@@ -69,12 +69,75 @@ pub struct Coord(i32, i32);
 
 #[derive(Component)]
 pub enum Level {
-    Height(i8),
-    Elevation(i8),
-    Altitude(i8),
-    Depth(i8),
+    Height(i32),
+    Elevation(i32),
+    Altitude(i32),
+    Depth(i32),
 }
 
+pub enum LevelValue {
+    Val(i32),
+    Wildcard,
+}
+
+impl From<i32> for LevelValue {
+    fn from(value: i32) -> Self {
+        LevelValue::Val(value)
+    }
+}
+
+pub enum LevelLookup {
+    Height(LevelValue),
+    Elevation(LevelValue),
+    Altitude(LevelValue),
+    Depth(LevelValue),
+}
+
+impl TryInto<Level> for LevelLookup {
+    type Error= &'static str;
+
+    fn try_into(self) -> Result<Level, Self::Error> {
+    const ERROR_MESSAGE: &'static str = "Cannot convert wildcard.";
+        match self {
+            LevelLookup::Altitude(LevelValue::Wildcard) => Err(ERROR_MESSAGE),
+            LevelLookup::Height(LevelValue::Wildcard) => Err(ERROR_MESSAGE),
+            LevelLookup::Elevation(LevelValue::Wildcard) => Err(ERROR_MESSAGE),
+            LevelLookup::Depth(LevelValue::Wildcard) => Err(ERROR_MESSAGE),
+            LevelLookup::Altitude(LevelValue::Val(v)) => Ok(Level::Altitude(v)),
+            LevelLookup::Depth(LevelValue::Val(v)) => Ok(Level::Depth(v)),
+            LevelLookup::Elevation(LevelValue::Val(v)) => Ok(Level::Elevation(v)),
+            LevelLookup::Height(LevelValue::Val(v)) => Ok(Level::Height(v))
+        }
+    }
+}
+
+impl From<Level> for LevelLookup {
+    fn from(other: Level) -> Self {
+        match other {
+            Level::Altitude(v) => LevelLookup::Altitude(LevelValue::Val(v)),
+            Level::Depth(v) => LevelLookup::Depth(v.into()),
+            Level::Elevation(v) => LevelLookup::Elevation(v.into()),
+            Level::Height(v) => LevelLookup::Height(v.into())
+        }
+    }
+}
+
+impl PartialEq for LevelLookup {
+    // Wildcard only works for the left side...
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Height(LevelValue::Wildcard),Self::Height(_)) => true,
+            (Self::Elevation(LevelValue::Wildcard),Self::Elevation(_)) => true,
+            (Self::Altitude(LevelValue::Wildcard),Self::Altitude(_)) => true,
+            (Self::Depth(LevelValue::Wildcard),Self::Depth(_)) => true,
+            (Self::Height(LevelValue::Val(l0)), Self::Height(LevelValue::Val(r0))) => l0 == r0,
+            (Self::Elevation(LevelValue::Val(l0)), Self::Elevation(LevelValue::Val(r0))) => l0 == r0,
+            (Self::Altitude(LevelValue::Val(l0)), Self::Altitude(LevelValue::Val(r0))) => l0 == r0,
+            (Self::Depth(LevelValue::Val(l0)), Self::Depth(LevelValue::Val(r0))) => l0 == r0,
+            _ => false,
+        }
+    }
+}
 type HexTypeLevel = (HexType, Level);
 
 pub enum HexError {
