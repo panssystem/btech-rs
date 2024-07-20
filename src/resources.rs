@@ -6,7 +6,7 @@ use bevy::{
 };
 use hexx::{Hex, HexLayout};
 
-use crate::{import::read_map, movement::map::MapBoard, units::Unit};
+use crate::{import::read_map, {movement::MapHex, units::Unit, map::MapBoard}};
 
 #[derive(Debug, Default, Resource)]
 pub struct Highlighted {
@@ -20,8 +20,14 @@ pub struct Map {
     pub entities: HashMap<Hex, Entity>,
     pub bare_material: Handle<ColorMaterial>,
     pub highlighted_material: Handle<ColorMaterial>,
-}
+    pub map_hexes: HashMap<Hex,MapHex>,
+    // pub tileset: HashMap<&str, Tile>
+} 
+
 impl Map {
+    pub fn get_map_hex(&self, hex: Hex) -> Option<&MapHex> {
+        self.map_hexes.get(&hex)
+    }
     // pub fn move_cost(&self, unit: Unit, hex: Hex) -> Option<u32> {
     //     match hexx::algorithms::a_star(hex, hex, |start, end| {
             // map_start = self.get_map_hex(start);
@@ -45,6 +51,7 @@ impl Map {
     // }
 }
 
+// struct Tile {}
 pub struct ResourceLoader {
     root: String,
 }

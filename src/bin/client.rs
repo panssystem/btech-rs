@@ -4,14 +4,16 @@ use bevy::{
     color, prelude::*, render::{
         mesh::{Indices, PrimitiveTopology},
         render_asset::RenderAssetUsages,
-    }, winit::WinitSettings
+    },
+    utils::hashbrown::HashMap,
+    winit::WinitSettings,
 };
 #[cfg(feature = "debug")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 use btech_rs::{
     constants::*,
-    movement::{HexType, Level},
+    movement::{HexType, Level, MapHex},
     resources::*,
     systems::*,
 };
@@ -132,6 +134,7 @@ fn setup_grid(
         entities,
         bare_material,
         highlighted_material,
+        map_hexes: HashMap::<Hex, MapHex>::new(),
     });
 }
 

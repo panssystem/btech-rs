@@ -1,4 +1,6 @@
-use crate::movement::{Facing, MoveType};
+use hexx::Hex;
+
+use crate::movement::{Facing, MoveMode, MoveType};
 
 // trait Vehicle {
 //     fn get_move_type(&self) -> MoveType;
@@ -18,7 +20,8 @@ pub enum VehicleType {
 #[derive(Debug)]
 pub struct Unit {
     unit_type: UnitType,
-    facing: Facing,
+    facing: Facing, 
+    position: Hex,
 }
 
 #[derive(Debug)]

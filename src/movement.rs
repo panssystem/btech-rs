@@ -1,5 +1,7 @@
-use crate::units::Unit;
 use bevy::prelude::Component;
+use hexx::Hex;
+
+use crate::{constants::OFFSET_HEX_MODE, units::Unit};
 
 pub enum MoveMode {
     Walk,
@@ -43,7 +45,7 @@ pub enum Facing {
     NorthEast,
 }
 
-#[derive(Clone, Component)]
+#[derive(Clone, Component, Debug)]
 pub enum HexType {
     Clear,
     Paved(Option<Vec<Facing>>), // Which directions does the road leave. For tracking if something is on it or not.
@@ -66,7 +68,7 @@ pub enum MoveCost {
 
 pub struct Coord(i32, i32);
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub enum Level {
     Height(i32),
     Elevation(i32),
@@ -145,22 +147,22 @@ pub enum HexError {
     ElevationNotAllowed(&'static str),
     AltitudeNotAllowed(&'static str),
 }
-
-pub struct Hex {
+#[derive(Debug)]
+pub struct MapHex {
     hex_type: HexType,
     level: Level,
     x: i32,
     y: i32,
 }
 
-impl Hex {
+impl MapHex {
     fn try_move_into(&self, unit: Unit) -> MoveCost {
         let veh_move_type = unit.get_move_type();
         move_cost_to_hex_type(self.hex_type.clone(), veh_move_type, unit.get_facing())
     }
 
-    pub fn from_components(x: i32, y: i32, hex_type_level: HexTypeLevel) -> Result<Hex, HexError> {
-        if let Level::Elevation(_h) = hex_type_level.1 {
+    pub fn from_components(x: i32, y: i32, hex_type_level: HexTypeLevel) -> Result<MapHex, HexError> {
+        if let Level::Elevation(h) = hex_type_level.1 {
             Err(HexError::ElevationNotAllowed(
                 "Hexes don't have Elevations, only Height or Depth.",
             ))
@@ -170,7 +172,7 @@ impl Hex {
             ))
         } else {
             let (hex_type, level) = hex_type_level;
-            Ok(Hex {
+            Ok(MapHex {
                 hex_type,
                 level,
                 x,
@@ -180,6 +182,12 @@ impl Hex {
     }
 }
 
+impl Into<Hex> for MapHex {
+    fn into(self) -> Hex {
+        // hex(self.x,self.y) // Should I be converting coordinates here?
+        Hex::from_offset_coordinates([self.x,self.y],OFFSET_HEX_MODE)
+    }
+}
 fn move_cost_to_hex_type(hex_type: HexType, veh_move_type: MoveType, facing: &Facing) -> MoveCost {
     match hex_type {
         HexType::Clear => move_clear_or_paved(veh_move_type),
@@ -265,9 +273,9 @@ fn move_clear_or_paved(veh_move_type: MoveType) -> MoveCost {
 pub mod map {
     use std::collections::HashMap;
 
-    use super::{Coord, Hex};
+    use super::{Coord, MapHex};
     pub struct MapBoard {
-        pub hexes: HashMap<Coord, Hex>,
+        pub hexes: HashMap<Coord, MapHex>,
     }
     impl MapBoard {
         pub fn new(size: Coord) -> Self {
