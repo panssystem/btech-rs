@@ -1,12 +1,10 @@
 use std::time::Duration;
 
 use bevy::{
-    prelude::*,
-    render::{
+    color, prelude::*, render::{
         mesh::{Indices, PrimitiveTopology},
         render_asset::RenderAssetUsages,
-    },
-    winit::WinitSettings,
+    }, winit::WinitSettings
 };
 #[cfg(feature = "debug")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -24,12 +22,10 @@ fn main() {
     let app = binding
         .init_resource::<Highlighted>()
         .insert_resource(WinitSettings {
-            focused_mode: bevy::winit::UpdateMode::ReactiveLowPower {
-                wait: Duration::from_millis(50),
-            },
-            unfocused_mode: bevy::winit::UpdateMode::ReactiveLowPower {
-                wait: Duration::from_millis(1000),
-            },
+            focused_mode: bevy::winit::UpdateMode::reactive_low_power(Duration::from_millis(50)),
+            unfocused_mode: bevy::winit::UpdateMode::reactive_low_power(Duration::from_millis(
+                1000,
+            )),
         })
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
@@ -81,8 +77,8 @@ fn setup_grid(
         ..default()
     };
     // let (camera,cam_transform) = cameras.single();
-    let bare_material = materials.add(Color::BEIGE);
-    let highlighted_material = materials.add(Color::RED);
+    let bare_material = materials.add(Color::Srgba(color::palettes::css::BEIGE));
+    let highlighted_material = materials.add(Color::Srgba(color::palettes::css::RED));
     let mesh = hexagonal_plane(&layout);
     let mesh_handle = meshes.add(mesh);
     let top_left = Hex::from_offset_coordinates([1, 1], OFFSET_HEX_MODE);

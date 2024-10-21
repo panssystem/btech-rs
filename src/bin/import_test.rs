@@ -1,5 +1,5 @@
 use btech_rs::import::handle_path;
-use std::{env, path::PathBuf};
+use std::env;
 
 fn main() {
     let default_path = "C:\\Users\\peter\\Repos\\Battletech\\megamek\\megamek\\data\\mechfiles\\mechs\\3039u\\Zeus ZEU-6T.mtf".to_string();
