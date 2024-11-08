@@ -85,6 +85,11 @@ pub mod game {
         pub fn get_side(&self, n: usize) -> Option<&Side> {
             self.sides.get(n)
         }
+        pub fn add_side(&mut self, name: String) -> Option<&Side> {
+            let mut new_side = Side::new(name,vec![],vec![],vec![]);
+            self.sides.push(new_side);
+            Some(new_side)
+        }
     }
 }
 
