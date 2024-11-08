@@ -6,7 +6,7 @@ use bevy::{
 };
 use hexx::{Hex, HexLayout};
 
-use crate::units::Unit;
+use crate::{import::read_map, movement::map::MapBoard, units::Unit};
 
 #[derive(Debug, Default, Resource)]
 pub struct Highlighted {
@@ -43,4 +43,13 @@ impl Map {
     // fn get_map_hex(&self, hex: Hex) -> MapHex {
         // self.map_hexes.get(hex)
     // }
+}
+
+pub struct ResourceLoader {
+    root: String,
+}
+impl ResourceLoader {
+    pub fn load_map(map_name: String) -> Option<MapBoard> {
+        read_map(map_name)
+    }
 }

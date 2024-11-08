@@ -266,12 +266,12 @@ pub mod map {
     use std::collections::HashMap;
 
     use super::{Coord, Hex};
-    pub struct Map {
+    pub struct MapBoard {
         pub hexes: HashMap<Coord, Hex>,
     }
-    impl Map {
+    impl MapBoard {
         pub fn new(size: Coord) -> Self {
-            Map {
+            MapBoard {
                 hexes: HashMap::with_capacity((size.0 * size.1).try_into().unwrap_or_else(|_| 0)),
             }
         }

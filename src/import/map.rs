@@ -1,6 +1,6 @@
-use crate::movement::map::Map;
+use crate::movement::map::MapBoard;
 
-fn read_map(_path: String) -> Option<Map> {
+pub fn read_map(_path: String) -> Option<MapBoard> {
     // todo: Implement!!!
     None
 }
