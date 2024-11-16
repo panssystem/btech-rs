@@ -88,7 +88,7 @@ pub mod game {
         pub fn add_side(&mut self, name: String) -> Option<&Side> {
             let mut new_side = Side::new(name,vec![],vec![],vec![]);
             self.sides.push(new_side);
-            Some(new_side)
+            self.sides.last()
         }
     }
 }

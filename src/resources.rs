@@ -6,7 +6,7 @@ use bevy::{
 };
 use hexx::{Hex, HexLayout};
 
-use crate::{import::read_map, {movement::MapHex, units::Unit, map::MapBoard}};
+use crate::{import::read_map, {movement::{MapHex, map::MapBoard}, units::Unit}};
 
 #[derive(Debug, Default, Resource)]
 pub struct Highlighted {
