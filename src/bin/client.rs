@@ -45,12 +45,19 @@ fn main() {
             Startup,
             (
                 setup_camera,
-                setup_grid.run_if(in_state(Mode::Map)),
                 draw_grid.after(setup_grid),
             ),
         )
         .add_systems(OnEnter(Mode::Menu), setup_menu)
-        .add_systems(Update, handle_hover.run_if(in_state(Mode::Map)));
+        .add_systems(OnExit(Mode::Menu), teardown_menu)
+        .add_systems(OnEnter(Mode::Map), setup_grid)
+        .add_systems(
+            Update,
+            (
+                handle_hover.run_if(in_state(Mode::Map)),
+                button_system.run_if(in_state(Mode::Menu)),
+            ),
+        );
 
     if cfg!(feature = "debug") {
         add_world_inspector(app);

@@ -51,6 +51,13 @@ impl Map {
     // }
 }
 
+#[derive(Debug, Resource)]
+pub struct MenuData {
+    pub start_game_button: Entity,
+    // pub view_unit_button: Entity,
+    // pub view_map_button: Entity,
+    // pub campaign_button: Entity,
+}
 // struct Tile {}
 pub struct ResourceLoader {
     root: String,
