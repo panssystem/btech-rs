@@ -1,5 +1,5 @@
 use bevy::{
-    color::palettes::css::{GOLD, ORANGE},
+    color::palettes::css::{ORANGE},
     prelude::*,
     window::PrimaryWindow,
 };
@@ -150,7 +150,7 @@ pub fn button_system(
     mut text_query: Query<&mut Text>,
 ) {
     for (interaction, children, mut image) in &mut interaction_query {
-        let mut text = text_query.get_mut(children[0]).unwrap();
+        let text = text_query.get_mut(children[0]).unwrap();
         match *interaction {
             Interaction::Pressed => {
                 // text.sections[0].value = "Press".to_string();

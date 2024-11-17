@@ -1,6 +1,6 @@
 use hexx::Hex;
 
-use crate::movement::{Facing, MoveMode, MoveType};
+use crate::movement::{Facing, MoveType};
 
 // trait Vehicle {
 //     fn get_move_type(&self) -> MoveType;
