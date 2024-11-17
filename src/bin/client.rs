@@ -1,7 +1,9 @@
 use std::time::Duration;
 
 use bevy::{
-    color, prelude::*, render::{
+    color,
+    prelude::*,
+    render::{
         mesh::{Indices, PrimitiveTopology},
         render_asset::RenderAssetUsages,
     },
@@ -15,6 +17,7 @@ use btech_rs::{
     constants::*,
     movement::{HexType, Level, MapHex},
     resources::*,
+    states::Mode,
     systems::*,
 };
 use hexx::{Hex, HexLayout, PlaneMeshBuilder};
@@ -32,15 +35,22 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 resolution: (1000.0, 1000.0).into(),
+                // cuicui_layout_bevy_ui::Plugin,
                 ..default()
             }),
             ..default()
         }))
+        .init_state::<Mode>()
         .add_systems(
             Startup,
-            (setup_camera, setup_grid, draw_grid.after(setup_grid)),
+            (
+                setup_camera,
+                setup_grid.run_if(in_state(Mode::Map)),
+                draw_grid.after(setup_grid),
+            ),
         )
-        .add_systems(Update, handle_hover);
+        .add_systems(OnEnter(Mode::Menu), setup_menu)
+        .add_systems(Update, handle_hover.run_if(in_state(Mode::Map)));
 
     if cfg!(feature = "debug") {
         add_world_inspector(app);
