@@ -12,19 +12,6 @@ pub mod states;
 pub mod systems;
 mod units;
 
-pub enum TurnPhase {
-    InitiativePhase,
-    MovementPhase(MovementSubphase),
-    WeaponAttackPhase,
-    PhysicalAttackPhase,
-    HeatPhase,
-    EndPhase,
-}
-
-pub enum MovementSubphase {
-    GroundMovementPhase,
-    AerospaceMovementPhase,
-}
 pub enum Commands {
     PlaceCommand,
     MoveCommand,
