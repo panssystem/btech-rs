@@ -1,5 +1,5 @@
 use bevy::{
-    asset::Handle, prelude::{Entity, Resource}, sprite::ColorMaterial, text::cosmic_text::Color, utils::HashMap
+    asset::Handle, prelude::{Entity, Resource}, sprite::ColorMaterial, utils::HashMap
 };
 use hexx::{Hex, HexLayout};
 
