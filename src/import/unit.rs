@@ -4,6 +4,10 @@ use std::{
     path::PathBuf,
 };
 
+use crate::{
+    constants::{MOTION_TYPE, TANK_TYPE, UNIT_NAME, UNIT_TYPE}, movement::MoveType, units::{BattleMech, UnitType, Vehicle, VehicleType}
+};
+
 #[derive(Debug)]
 pub struct FileImport {
     entries: HashMap<String, FileEntry>,
@@ -20,11 +24,43 @@ impl FileImport {
     }
 }
 
+impl Into<UnitType> for FileImport {
+    fn into(self) -> UnitType {
+        if let Some(FileEntry::Single(unit_type)) = self.entries.get(UNIT_TYPE) {
+            match unit_type.as_str() {
+                TANK_TYPE => {
+                    UnitType::Vehicle(Vehicle {
+                                    name: file_entry_to_string(self.entries.get(UNIT_NAME).unwrap()),
+                                    vehicle_type: VehicleType::Combat,
+                                    movement_mode: match self.entries.get(MOTION_TYPE).unwrap() {
+                                        FileEntry::Single(e)  => MoveType::Tracked,
+                                        FileEntry::Block(_block) => todo!(),
+                                        FileEntry::Empty => todo!(),
+                                    },
+                                })
+                },
+                _ => UnitType::Mech(BattleMech {})
+            };
+            todo!("Parse all units types except meks")
+        } else {
+            todo!("Parse meks");
+            UnitType::Mech(BattleMech {})
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum FileEntry {
     Single(String),
     Block(Block),
     Empty,
+}
+
+fn file_entry_to_string(entry: &FileEntry) -> String {
+    match entry {
+        FileEntry::Single(s) => s.clone(),
+        _ => String::new(),
+    }
 }
 #[derive(Debug)]
 pub enum BlockEntry {
@@ -65,6 +101,7 @@ pub fn handle_path(path: &str) -> i32 {
         Err(e) => todo!("{:#?}", e),
     }
 }
+
 fn read_dir(folder: &str) -> i32 {
     let mut read = 0;
     match fs::read_dir(folder) {

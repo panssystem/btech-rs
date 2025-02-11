@@ -78,9 +78,9 @@ pub struct ProtoMech {
 
 #[derive(Debug)]
 pub struct Vehicle {
-    name: String,
-    vehicle_type: VehicleType,
-    movement_mode: MoveType,
+    pub name: String,
+    pub vehicle_type: VehicleType,
+    pub movement_mode: MoveType,
 }
 
 #[derive(Debug)]
