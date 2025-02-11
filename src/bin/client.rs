@@ -41,13 +41,7 @@ fn main() {
             ..default()
         }))
         .init_state::<Mode>()
-        .add_systems(
-            Startup,
-            (
-                setup_camera,
-                draw_grid.after(setup_grid),
-            ),
-        )
+        .add_systems(Startup, (setup_camera, draw_grid.after(setup_grid)))
         .add_systems(OnEnter(Mode::Menu), setup_menu)
         .add_systems(OnExit(Mode::Menu), teardown_menu)
         .add_systems(OnEnter(Mode::Map), setup_grid)
@@ -74,15 +68,13 @@ fn add_world_inspector(app: App) -> App {
 fn add_world_inspector(_app: &mut App) {}
 
 fn setup_camera(mut commands: Commands) {
-    commands.spawn(Camera2dBundle {
-        transform: Transform::from_xyz(470.0, -450.0, 0.0),
-        ..default()
-    });
+    commands.spawn((Transform::from_xyz(470.0, 450.0, 0.0), Camera2d {}));
 }
 
 fn build_offset_rectangle([left, right, top, bottom]: [i32; 4]) -> impl Iterator<Item = Hex> {
     (left..=right).flat_map(move |x| {
-        ((top)..=(bottom)).map(move |y| Hex::from_offset_coordinates([x, y], OFFSET_HEX_MODE))
+        ((top)..=(bottom))
+            .map(move |y| Hex::from_offset_coordinates([x, y], OFFSET_HEX_MODE, HEX_ORIENTATION))
     })
 }
 fn setup_grid(
@@ -92,7 +84,7 @@ fn setup_grid(
     // cameras: Query<(&Camera, &GlobalTransform)>,
 ) {
     let layout = HexLayout {
-        hex_size: HEX_SIZE,
+        scale: HEX_SIZE,
         ..default()
     };
     // let (camera,cam_transform) = cameras.single();
@@ -100,8 +92,8 @@ fn setup_grid(
     let highlighted_material = materials.add(Color::Srgba(color::palettes::css::RED));
     let mesh = hexagonal_plane(&layout);
     let mesh_handle = meshes.add(mesh);
-    let top_left = Hex::from_offset_coordinates([1, 1], OFFSET_HEX_MODE);
-    let bottom_right = Hex::from_offset_coordinates([16, 17], OFFSET_HEX_MODE);
+    let top_left = Hex::from_offset_coordinates([1, 1], OFFSET_HEX_MODE, HEX_ORIENTATION);
+    let bottom_right = Hex::from_offset_coordinates([16, 17], OFFSET_HEX_MODE, HEX_ORIENTATION);
     info!(
         "{:?} {:?} {:?} {:?}",
         top_left,
@@ -114,33 +106,32 @@ fn setup_grid(
             let pos = layout.hex_to_world_pos(hex);
             let id = commands
                 .spawn((
-                    ColorMesh2dBundle {
-                        transform: Transform::from_xyz(pos.x, pos.y, 0.0),
-                        mesh: mesh_handle.clone().into(),
-                        material: bare_material.clone(),
-                        ..default()
-                    },
+                    // ColorMesh2dBundle {
+                    //     transform: Transform::from_xyz(pos.x, pos.y, 0.0),
+                    //     mesh: mesh_handle.clone().into(),
+                    //     material: bare_material.clone(),
+                    //     ..default()
+                    // },
+                    Mesh2d(mesh_handle.clone().into()),
+                    MeshMaterial2d(bare_material.clone()),
+                    Transform::from_xyz(pos.x, pos.y, 0.0),
                     HexType::Water(None, 1),
                     Level::Height(hex.x - 6),
                 ))
                 .with_children(|b| {
-                    b.spawn(Text2dBundle {
-                        text: Text::from_section(
-                            format!(
-                                "{},{}",
-                                hex.to_offset_coordinates(OFFSET_HEX_MODE)[0],
-                                hex.to_offset_coordinates(OFFSET_HEX_MODE)[1],
-                            ),
-                            TextStyle {
-                                font_size: 9.0,
-                                color: Color::BLACK,
-
-                                ..default()
-                            },
-                        ),
-                        transform: Transform::from_xyz(0.0, 18.0, 10.0),
-                        ..default()
-                    });
+                    b.spawn((
+                        Text2d::new(format!(
+                            "{},{}",
+                            hex.to_offset_coordinates(OFFSET_HEX_MODE, HEX_ORIENTATION)[0],
+                            hex.to_offset_coordinates(OFFSET_HEX_MODE, HEX_ORIENTATION)[1],
+                        )),
+                        TextFont {
+                            font_size: 9.0,
+                            ..default()
+                        },
+                        TextColor(Color::BLACK.into()),
+                        Transform::from_xyz(0.0, 18.0, 10.0),
+                    ));
                 })
                 .id();
             (hex, id)
@@ -177,36 +168,30 @@ fn draw_grid(mut commands: Commands, hexes: Query<(Entity, &Level, &HexType)>) {
             Level::Height(0) => (), // Don't show height if it's 0.
             Level::Height(h) => {
                 commands.entity(e).with_children(|b| {
-                    b.spawn(Text2dBundle {
-                        text: Text::from_section(
-                            format!("Height {}", h,),
-                            TextStyle {
-                                font_size: 9.0,
-                                color: Color::BLACK,
-                                ..default()
-                            },
-                        ),
-                        transform: Transform::from_xyz(0.0, -10.0, 10.0),
-                        ..default()
-                    });
+                    b.spawn((
+                        Transform::from_xyz(0.0, -10.0, 10.0),
+                        Text2d::new(format!("Height {}", h,)),
+                        TextFont {
+                            font_size: 9.0,
+                            ..Default::default()
+                        },
+                        TextColor(Color::BLACK),
+                    ));
                 });
             }
             _ => (),
         }
         if let HexType::Water(_, h) = hex_type {
             commands.entity(e).with_children(|b| {
-                b.spawn(Text2dBundle {
-                    text: Text::from_section(
-                        format!("Depth {}", h,),
-                        TextStyle {
-                            font_size: 9.0,
-                            color: Color::BLACK,
-                            ..default()
-                        },
-                    ),
-                    transform: Transform::from_xyz(0.0, -16.0, 10.0),
-                    ..default()
-                });
+                b.spawn((
+                    Transform::from_xyz(0.0, -16.0, 10.0),
+                    Text2d::new(format!("Depth {}", h,)),
+                    TextFont {
+                        font_size: 9.0,
+                        ..Default::default()
+                    },
+                    TextColor(Color::BLACK),
+                ));
             });
         }
     }

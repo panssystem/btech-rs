@@ -1,8 +1,9 @@
 use bevy::prelude::*;
-use hexx::OffsetHexMode;
+use hexx::{HexOrientation, OffsetHexMode};
 
 pub const HEX_SIZE: Vec2 = Vec2::splat(26.0);
-pub const OFFSET_HEX_MODE: OffsetHexMode = OffsetHexMode::EvenColumns;
+pub const OFFSET_HEX_MODE: OffsetHexMode = OffsetHexMode::Even;
+pub const HEX_ORIENTATION: HexOrientation = HexOrientation::Flat;
 
 pub const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 pub const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);

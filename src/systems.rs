@@ -1,15 +1,14 @@
 use bevy::{
-    color::palettes::css::{ORANGE},
-    prelude::*,
-    window::PrimaryWindow,
+    color::palettes::css::ORANGE, prelude::*, ui::widget, window::PrimaryWindow
 };
 // use cuicui_dsl::{dsl, BuildChildren, EntityCommands};
 // use cuicui_layout::dsl_functions::*;
 // use cuicui_layout_bevy_ui::UiDsl;
 
 use crate::{
-    constants::{NORMAL_BUTTON, OFFSET_HEX_MODE},
-    resources::*, states::Mode,
+    constants::{HEX_ORIENTATION, NORMAL_BUTTON, OFFSET_HEX_MODE},
+    resources::*,
+    states::Mode,
 };
 
 pub fn handle_hover(
@@ -26,7 +25,7 @@ pub fn handle_hover(
         }
         info!(
             "{:?}, {:?}, {:?}",
-            coord.to_offset_coordinates(OFFSET_HEX_MODE),
+            coord.to_offset_coordinates(OFFSET_HEX_MODE, HEX_ORIENTATION),
             coord,
             pos
         );
@@ -34,13 +33,13 @@ pub fn handle_hover(
         if let Some(entity) = map.entities.get(&highlighted_hexes.hovered) {
             commands
                 .entity(*entity)
-                .insert(map.bare_material.clone_weak());
+                .insert(MeshMaterial2d(map.bare_material.clone_weak()));
         }
         highlighted_hexes.hovered = coord;
         if let Some(entity) = map.entities.get(&coord).copied() {
             commands
                 .entity(entity)
-                .insert(map.highlighted_material.clone_weak());
+                .insert(MeshMaterial2d(map.highlighted_material.clone_weak()));
         }
     }
 }
@@ -65,20 +64,19 @@ pub fn setup_menu(mut commands: Commands, serv: Res<AssetServer>) {
     //         }
     //     }
     // };
-    let start_game_button = fun_name(&mut commands, menu_items[1]);
+    let start_game_button = build_button(&mut commands, menu_items[1]);
     commands.insert_resource(MenuData { start_game_button });
 }
 
 pub fn teardown_menu(mut commands: Commands, menu: Res<MenuData>) {
-    commands.entity(menu.start_game_button)
-    .despawn_recursive();
+    commands.entity(menu.start_game_button).despawn_recursive();
     commands.remove_resource::<MenuData>();
 }
 
-fn fun_name(commands: &mut Commands<'_, '_>, button_text: &str) -> Entity {
+fn build_button(commands: &mut Commands<'_, '_>, button_text: &str) -> Entity {
     let start_game_button = commands
-        .spawn(NodeBundle {
-            style: Style {
+        .spawn((
+            Node {
                 // center button
                 width: Val::Percent(100.),
                 height: Val::Percent(100.),
@@ -86,12 +84,13 @@ fn fun_name(commands: &mut Commands<'_, '_>, button_text: &str) -> Entity {
                 align_items: AlignItems::Center,
                 ..default()
             },
-            ..default()
-        })
+            // ..default()
+        ))
         .with_children(|parent| {
             parent
-                .spawn(ButtonBundle {
-                    style: Style {
+                .spawn((
+                    Button {},
+                    Node {
                         width: Val::Px(150.),
                         height: Val::Px(65.),
                         // horizontally center child text
@@ -100,22 +99,22 @@ fn fun_name(commands: &mut Commands<'_, '_>, button_text: &str) -> Entity {
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    background_color: NORMAL_BUTTON.into(),
-                    ..default()
-                })
+                    BackgroundColor(NORMAL_BUTTON.into()),
+                ))
                 .with_children(|parent| {
-                    parent.spawn(TextBundle::from_section(
-                        button_text,
-                        TextStyle {
+                    parent.spawn((
+                        Text(button_text.to_string()),
+                        TextFont {
                             font_size: 40.0,
-                            color: Color::srgb(0.9, 0.9, 0.9),
                             ..default()
                         },
+                        TextColor(Color::srgb(0.9, 0.9, 0.9)),
                     ));
                 });
             parent
-                .spawn(ButtonBundle {
-                    style: Style {
+                .spawn((
+                    Button {},
+                    Node {
                         width: Val::Px(150.),
                         height: Val::Px(65.),
                         // horizontally center child text
@@ -124,17 +123,15 @@ fn fun_name(commands: &mut Commands<'_, '_>, button_text: &str) -> Entity {
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    background_color: NORMAL_BUTTON.into(),
-                    ..default()
-                })
+                    BackgroundColor(NORMAL_BUTTON.into()),
+                ))
                 .with_children(|parent| {
-                    parent.spawn(TextBundle::from_section(
-                        "View Map",
-                        TextStyle {
-                            font_size: 40.0,
-                            color: Color::srgb(0.9, 0.9, 0.9),
+                    parent.spawn((Text("View Map".to_string()),
+                        TextFont {
+                            font_size: 30.0,
                             ..default()
                         },
+                        TextColor(Color::srgb(0.9, 0.9, 0.9))
                     ));
                 });
         })
@@ -143,30 +140,34 @@ fn fun_name(commands: &mut Commands<'_, '_>, button_text: &str) -> Entity {
 }
 
 pub fn button_system(
-    state: Res<State<Mode>>, mut next_state: ResMut<NextState<Mode>>, mut interaction_query: Query<
-        (&Interaction, &Children, &mut UiImage),
+    // state: Res<State<Mode>>,
+    mut next_state: ResMut<NextState<Mode>>,
+    mut interaction_query: Query<
+        // (&Interaction, &Children, &mut ImageNode),
+        (&Interaction, &Children, &mut BackgroundColor),
         (Changed<Interaction>, With<Button>),
     >,
     mut text_query: Query<&mut Text>,
 ) {
-    for (interaction, children, mut image) in &mut interaction_query {
+    for (interaction, children, mut color) in &mut interaction_query {
         let text = text_query.get_mut(children[0]).unwrap();
+        println!("handling {}", &text.0);
         match *interaction {
             Interaction::Pressed => {
                 // text.sections[0].value = "Press".to_string();
-                 match &text.sections[0].value[..] {
+                match text.as_str() {
                     "View Map" => next_state.set(Mode::Map),
                     _ => (),
-                 };
-                 println!("clicked {}", &text.sections[0].value);
+                };
+                println!("clicked {}", &text.0);
             }
             Interaction::Hovered => {
-                // text.sections[0].value = "Hover".to_string();
-                image.color = ORANGE.into();
+                // text.set("Hover".to_string());
+                *color = BackgroundColor::from(ORANGE);
             }
             Interaction::None => {
-                // text.sections[0].value = "Button".to_string();
-                image.color = Color::WHITE;
+                // text.push_str("Button".to_string());
+                *color = BackgroundColor(NORMAL_BUTTON);
             }
         }
     }
@@ -186,7 +187,7 @@ mod helpers {
         let (camera, cam_transform) = cameras.single();
         window
             .cursor_position()
-            .and_then(|p| camera.viewport_to_world_2d(cam_transform, p))
+            .and_then(|p| Some(camera.viewport_to_world_2d(cam_transform, p).expect("Viewport Error")))
     }
 
     // fn button(cmds: &mut EntityCommands, button_bg: &Handle<Image>, button_text: &'static str) {

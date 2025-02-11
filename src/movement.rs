@@ -1,7 +1,7 @@
 use bevy::prelude::Component;
 use hexx::Hex;
 
-use crate::{constants::OFFSET_HEX_MODE, units::Unit};
+use crate::{constants::{HEX_ORIENTATION, OFFSET_HEX_MODE}, units::Unit};
 
 pub enum MoveMode {
     Walk,
@@ -185,7 +185,7 @@ impl MapHex {
 impl Into<Hex> for MapHex {
     fn into(self) -> Hex {
         // hex(self.x,self.y) // Should I be converting coordinates here?
-        Hex::from_offset_coordinates([self.x,self.y],OFFSET_HEX_MODE)
+        Hex::from_offset_coordinates([self.x,self.y],OFFSET_HEX_MODE, HEX_ORIENTATION)
     }
 }
 fn move_cost_to_hex_type(hex_type: HexType, veh_move_type: MoveType, facing: &Facing) -> MoveCost {

@@ -36,7 +36,7 @@ pub trait DiceRoller {
     /// assert!(max < 7 && max > 0);
     /// ```
     fn roll_d6(&self) -> i8 {
-        rand::thread_rng().gen_range(1..6)
+        rand::rng().random_range(1..6)
     }
 }
 
