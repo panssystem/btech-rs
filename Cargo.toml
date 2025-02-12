@@ -6,6 +6,11 @@ default-run = "client"
 
 [features]
 debug = ["dep:bevy-inspector-egui"]
+infantry = []
+vehicle = []
+aerospace = []
+dropship = []
+protomech = []
 
 [dependencies]
 bevy = "0.15.2"

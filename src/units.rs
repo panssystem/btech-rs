@@ -27,16 +27,27 @@ pub struct Unit {
 #[derive(Debug)]
 pub enum UnitType {
     Mech(BattleMech),
+    #[cfg(feature = "infantry")]
     BattleArmor(BattleArmor),
+    #[cfg(feature = "infantry")]
     Infantry(Infantry),
+    #[cfg(feature = "vehicle")]
     Vehicle(Vehicle),
+    #[cfg(feature = "aerospace")]
     Fighter(Fighter),
+    #[cfg(feature = "dropship")]
     DropShip(DropShip),
+    #[cfg(feature = "protomech")]
     ProtoMech(ProtoMech),
+    #[cfg(feature = "vehicle")]
     SmallCraft(SmallCraft),
+    #[cfg(feature = "aerospace")]
     JumpShip(JumpShip),
+    #[cfg(feature = "aerospace")]
     WarShip(WarShip),
+    #[cfg(feature = "aerospace")]
     SpaceStation(SpaceStation),
+    Invalid
 }
 
 // impl Vehicle for Unit {
@@ -67,15 +78,63 @@ impl Unit {
 }
 
 #[derive(Debug)]
-pub struct BattleMech {
-    // name: String,
+pub struct Location {
+    name: String,
+    slots: i8,
+    structure: i8,
+    armor: i8,
+    components: Vec<Component>,
 }
 
+#[derive(Debug)]
+pub struct Component {
+    name: String,
+    weight: f32,
+    slots: i8
+}
+
+#[derive(Debug)]
+pub enum MechConfig {
+    Biped,
+    BipedOmni,
+    Quad,
+    QuadOmni,
+    QuadVee,
+    QuadVeeOmni,
+    Unknown
+}
+
+#[derive(Debug)]
+pub enum TechBase {
+    Clan,
+    InnerSphere,
+}
+
+#[derive(Debug)]
+pub enum Structure {
+    Standard(TechBase),
+    EndoSteel(TechBase),
+}
+
+#[derive(Debug)]
+pub struct BattleMech {
+    pub chassis: String,
+    pub model: String,
+    pub mass: i8,
+    pub structure: Structure,
+    pub myomer: String,
+    pub armor: String,
+    pub locations: Vec<Location>,
+    pub config: MechConfig
+}
+
+#[cfg(feature = "protomech")]
 #[derive(Debug)]
 pub struct ProtoMech {
     // name: String,
 }
 
+#[cfg(feature = "vehicle")]
 #[derive(Debug)]
 pub struct Vehicle {
     pub name: String,
@@ -83,16 +142,20 @@ pub struct Vehicle {
     pub movement_mode: MoveType,
 }
 
+
+#[cfg(feature = "infantry")]
 #[derive(Debug)]
 pub struct Infantry {
     // name: String,
 }
 
 #[derive(Debug)]
+#[cfg(feature = "infantry")]
 pub struct BattleArmor {
     // name: String,
 }
 
+#[cfg(feature = "aerospace")]
 #[derive(Debug)]
 pub struct Fighter {
     // name: String,
@@ -103,13 +166,20 @@ pub struct SmallCraft {
     // name: String,
 }
 
+#[cfg(feature = "aerospace")]
 #[derive(Debug)]
 pub struct DropShip {
     // name: String,
 }
+
+#[cfg(feature = "aerospace")]
 #[derive(Debug)]
 pub struct JumpShip {}
+
+#[cfg(feature = "aerospace")]
 #[derive(Debug)]
 pub struct WarShip {}
+
+#[cfg(feature = "aerospace")]
 #[derive(Debug)]
 pub struct SpaceStation {}

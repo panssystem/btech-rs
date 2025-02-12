@@ -5,8 +5,12 @@ use std::{
 };
 
 use crate::{
-    constants::{MOTION_TYPE, TANK_TYPE, UNIT_NAME, UNIT_TYPE}, movement::MoveType, units::{BattleMech, UnitType, Vehicle, VehicleType}
+    constants::imports::*,
+    units::{BattleMech, MechConfig, UnitType},
 };
+
+#[cfg(feature = "vehicle")]
+use crate::units::Vehicle;
 
 #[derive(Debug)]
 pub struct FileImport {
@@ -23,30 +27,65 @@ impl FileImport {
         self.entries.insert(k, v);
     }
 }
+pub struct UnitConversionError(&str);
 
-impl Into<UnitType> for FileImport {
-    fn into(self) -> UnitType {
+impl TryInto<UnitType> for FileImport {
+    type Error = UnitConversionError;
+    
+    fn try_into(self) -> Result<UnitType, Self::Error> {
+        #[cfg(any(feature = "vehicle", feature = "aerospace", feature = "infantry"))]
         if let Some(FileEntry::Single(unit_type)) = self.entries.get(UNIT_TYPE) {
             match unit_type.as_str() {
-                TANK_TYPE => {
-                    UnitType::Vehicle(Vehicle {
-                                    name: file_entry_to_string(self.entries.get(UNIT_NAME).unwrap()),
-                                    vehicle_type: VehicleType::Combat,
-                                    movement_mode: match self.entries.get(MOTION_TYPE).unwrap() {
-                                        FileEntry::Single(e)  => MoveType::Tracked,
-                                        FileEntry::Block(_block) => todo!(),
-                                        FileEntry::Empty => todo!(),
-                                    },
-                                })
-                },
-                _ => UnitType::Mech(BattleMech {})
+                #[cfg(feature = "aerospace")]
+                TANK_TYPE =>
+                {
+                    #[cfg(feature = "vehicle")]
+                    Ok(UnitType::Vehicle(Vehicle {
+                        name: file_entry_to_string(self.entries.get(UNIT_NAME).unwrap()),
+                        vehicle_type: VehicleType::Combat,
+                        movement_mode: match self.entries.get(MOTION_TYPE).unwrap() {
+                            FileEntry::Single(e) => MoveType::Tracked,
+                            FileEntry::Block(_block) => todo!(),
+                            FileEntry::Empty => todo!(),
+                        },
+                    }))
+                }
+                _ => Err(UnitConversionError("Invalid non-mech")),
             };
             todo!("Parse all units types except meks")
+        }
+        if self.entries.contains_key(MECH_CONFIG) {
+            let config = match self.entries.get(MECH_CONFIG) {
+                Some(FileEntry::Single(cfg)) if cfg == "Biped" => MechConfig::Biped,
+                Some(FileEntry::Single(cfg)) if cfg == "Biped Omnimech" => MechConfig::BipedOmni,
+                Some(FileEntry::Single(cfg)) if cfg == "Biped" => MechConfig::Quad,
+                Some(FileEntry::Single(cfg)) if cfg == "Biped Omnimech" => MechConfig::QuadOmni,
+                Some(FileEntry::Single(cfg)) if cfg == "Biped" => MechConfig::QuadVee,
+                Some(FileEntry::Single(cfg)) if cfg == "Biped Omnimech" => MechConfig::QuadVeeOmni,
+                Some(_) => MechConfig::Unknown,
+                None => MechConfig::Unknown,
+            };
+            Ok(UnitType::Mech(BattleMech {
+                config,
+                chassis: match self.entries.get(MECH_CHASSIS) {
+                    Some(FileEntry::Single(chassis)) => chassis.to_string(),
+                    _ => "Unknown".to_string(),
+                },
+                model: match self.entries.get(MECH_MODEL) {
+                    Some(FileEntry::Single(model)) => model.to_string(),
+                    _ => "Unknown".to_string(),
+                },
+                myomer: todo!(),
+                structure: todo!(),
+                locations: todo!(),
+                mass: todo!(),
+                armor: todo!(),
+            }))
         } else {
-            todo!("Parse meks");
-            UnitType::Mech(BattleMech {})
+            Err(UnitConversionError("Invalid mech"))
         }
     }
+    
 }
 
 #[derive(Debug)]
@@ -145,7 +184,9 @@ fn parse_mtf_file(file_str: String) -> Option<FileImport> {
         if line.is_empty() || line.starts_with("#") {
             continue;
         } else if line.ends_with(":") || line.starts_with("Weapons:") {
-            let header = line;
+            let split_header: Vec<&str> = line.split(":").collect();
+            let header = split_header[0];
+            // println!("{:#?}",split_header);
             let mut entries = vec![];
             while let Some(line) = lines.next() {
                 if line.is_empty() {
@@ -153,7 +194,10 @@ fn parse_mtf_file(file_str: String) -> Option<FileImport> {
                 }
                 entries.push(BlockEntry::Str(line.to_string()));
             }
-
+            if split_header.len() == 2 && split_header[1] != "" {
+                println!("{:#?}", split_header);
+                assert_eq!(entries.len().to_string(), split_header[1], "Weapon Count doesn't match.");
+            }
             let b = Block::new(entries);
             file.add_entry(header.to_string(), FileEntry::Block(b));
             // println!("{:?}", b);
