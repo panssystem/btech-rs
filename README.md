@@ -1,4 +1,4 @@
-# betch-rs
+# btetch-rs
 
 Inspired by the [BattleTech Universe](https://bg.battletech.com/universe/) and [MegaMek](https://megamek.org), but frustrated by the resource requirements and network and Java difficulties of the latter, I set out to see how hard it would be to implement a web front end for MegaMek. This quickly changed into a project to re-implement the BattleTech rules in Rust.
 

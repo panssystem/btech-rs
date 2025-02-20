@@ -2,5 +2,8 @@
     "vscode-nmake-tools.workspaceBuildDirectories": [
         "."
     ],
-    "sarif-viewer.connectToGithubCodeScanning": "off"
+    "sarif-viewer.connectToGithubCodeScanning": "off",
+    "cSpell.words": [
+        "btetch"
+    ]
 }
