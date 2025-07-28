@@ -7,11 +7,11 @@ use bevy::{
         mesh::{Indices, PrimitiveTopology},
         render_asset::RenderAssetUsages,
     },
-    utils::hashbrown::HashMap,
     winit::WinitSettings,
 };
 #[cfg(feature = "debug")]
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use std::collections::HashMap;
 
 use btech_rs::{
     constants::*,

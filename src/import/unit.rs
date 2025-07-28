@@ -27,11 +27,11 @@ impl FileImport {
         self.entries.insert(k, v);
     }
 }
-pub struct UnitConversionError(&str);
+pub struct UnitConversionError(&'static str);
 
 impl TryInto<UnitType> for FileImport {
     type Error = UnitConversionError;
-    
+
     fn try_into(self) -> Result<UnitType, Self::Error> {
         #[cfg(any(feature = "vehicle", feature = "aerospace", feature = "infantry"))]
         if let Some(FileEntry::Single(unit_type)) = self.entries.get(UNIT_TYPE) {
@@ -85,7 +85,6 @@ impl TryInto<UnitType> for FileImport {
             Err(UnitConversionError("Invalid mech"))
         }
     }
-    
 }
 
 #[derive(Debug)]
@@ -196,7 +195,11 @@ fn parse_mtf_file(file_str: String) -> Option<FileImport> {
             }
             if split_header.len() == 2 && split_header[1] != "" {
                 println!("{:#?}", split_header);
-                assert_eq!(entries.len().to_string(), split_header[1], "Weapon Count doesn't match.");
+                assert_eq!(
+                    entries.len().to_string(),
+                    split_header[1],
+                    "Weapon Count doesn't match."
+                );
             }
             let b = Block::new(entries);
             file.add_entry(header.to_string(), FileEntry::Block(b));

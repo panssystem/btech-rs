@@ -1,9 +1,18 @@
 use bevy::{
-    asset::Handle, prelude::{Entity, Resource}, sprite::ColorMaterial, utils::HashMap
+    asset::Handle,
+    prelude::{Entity, Resource},
+    sprite::ColorMaterial,
 };
 use hexx::{Hex, HexLayout};
+use std::collections::HashMap;
 
-use crate::{import::read_map, {movement::{MapHex, map::MapBoard}, units::Unit}};
+use crate::{
+    import::read_map,
+    {
+        movement::{map::MapBoard, MapHex},
+        units::Unit,
+    },
+};
 
 #[derive(Debug, Default, Resource)]
 pub struct Highlighted {
@@ -17,9 +26,9 @@ pub struct Map {
     pub entities: HashMap<Hex, Entity>,
     pub bare_material: Handle<ColorMaterial>,
     pub highlighted_material: Handle<ColorMaterial>,
-    pub map_hexes: HashMap<Hex,MapHex>,
+    pub map_hexes: HashMap<Hex, MapHex>,
     // pub tileset: HashMap<&str, Tile>
-} 
+}
 
 impl Map {
     pub fn get_map_hex(&self, hex: Hex) -> Option<&MapHex> {
@@ -27,9 +36,9 @@ impl Map {
     }
     // pub fn move_cost(&self, unit: Unit, hex: Hex) -> Option<u32> {
     //     match hexx::algorithms::a_star(hex, hex, |start, end| {
-            // map_start = self.get_map_hex(start);
-            // map_end = self.get_map_hex(end);
-            // movement_cost(unit, map_start,map_end)
+    // map_start = self.get_map_hex(start);
+    // map_end = self.get_map_hex(end);
+    // movement_cost(unit, map_start,map_end)
     //         Some(1)
     //     }) {
     //         Some(route) => {
@@ -44,7 +53,7 @@ impl Map {
     //     }
     // }
     // fn get_map_hex(&self, hex: Hex) -> MapHex {
-        // self.map_hexes.get(hex)
+    // self.map_hexes.get(hex)
     // }
 }
 

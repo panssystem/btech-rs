@@ -1,6 +1,4 @@
-use bevy::{
-    color::palettes::css::ORANGE, prelude::*, window::PrimaryWindow
-};
+use bevy::{color::palettes::css::ORANGE, prelude::*, window::PrimaryWindow};
 // use cuicui_dsl::{dsl, BuildChildren, EntityCommands};
 // use cuicui_layout::dsl_functions::*;
 // use cuicui_layout_bevy_ui::UiDsl;
@@ -126,12 +124,13 @@ fn build_button(commands: &mut Commands<'_, '_>, button_text: &str) -> Entity {
                     BackgroundColor(NORMAL_BUTTON.into()),
                 ))
                 .with_children(|parent| {
-                    parent.spawn((Text("View Map".to_string()),
+                    parent.spawn((
+                        Text("View Map".to_string()),
                         TextFont {
                             font_size: 30.0,
                             ..default()
                         },
-                        TextColor(Color::srgb(0.9, 0.9, 0.9))
+                        TextColor(Color::srgb(0.9, 0.9, 0.9)),
                     ));
                 });
         })
@@ -183,11 +182,21 @@ mod helpers {
         windows: Query<&Window, With<PrimaryWindow>>,
         cameras: Query<(&Camera, &GlobalTransform)>,
     ) -> Option<Vec2> {
-        let window = windows.single();
-        let (camera, cam_transform) = cameras.single();
-        window
-            .cursor_position()
-            .and_then(|p| Some(camera.viewport_to_world_2d(cam_transform, p).expect("Viewport Error")))
+        if let Result::Ok(window) = windows.single() {
+            if let Result::Ok((camera, cam_transform)) = cameras.single() {
+                window.cursor_position().and_then(|p| {
+                    Some(
+                        camera
+                            .viewport_to_world_2d(cam_transform, p)
+                            .expect("Viewport Error"),
+                    )
+                })
+            } else {
+                None
+            }
+        } else {
+            None
+        }
     }
 
     // fn button(cmds: &mut EntityCommands, button_bg: &Handle<Image>, button_text: &'static str) {
