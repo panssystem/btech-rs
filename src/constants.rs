@@ -19,4 +19,7 @@ pub mod imports {
     pub const MUL_ID: &str = "mul id";
     pub const MECH_CHASSIS: &str = "chassis";
     pub const MECH_MODEL: &str = "model";
+    pub const MECH_MYOMER: &str = "myomer";
+    pub const MECH_STRUCTURE: &str = "structure";
+    pub const TECH_BASE: &str = "techbase";
 }

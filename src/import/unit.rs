@@ -6,7 +6,7 @@ use std::{
 
 use crate::{
     constants::imports::*,
-    units::{BattleMech, MechConfig, UnitType},
+    units::{Armor, BattleMech, ChassisTech, Location, MechConfig, Structure, TechBase, UnitType},
 };
 
 #[cfg(feature = "vehicle")]
@@ -65,6 +65,95 @@ impl TryInto<UnitType> for FileImport {
                 Some(_) => MechConfig::Unknown,
                 None => MechConfig::Unknown,
             };
+            let tech_base = match self.entries.get(TECH_BASE) {
+                Some(FileEntry::Single(base)) if base == "Clan" => {
+                    ChassisTech::Single(TechBase::Clan)
+                }
+                Some(FileEntry::Single(base)) if base == "Inner Sphere" => {
+                    ChassisTech::Single(TechBase::InnerSphere)
+                }
+                Some(FileEntry::Single(base)) if base == "Mixed (Clan Chassis)" => {
+                    ChassisTech::Mixed(TechBase::Clan)
+                }
+                Some(FileEntry::Single(base)) if base == "Mixed (IS Chassis)" => {
+                    ChassisTech::Mixed(TechBase::InnerSphere)
+                }
+                _ => ChassisTech::Single(TechBase::InnerSphere), // Default to Inner Sphere if not specified
+            };
+            let locations = match config {
+                MechConfig::Biped => vec![
+                    Location {
+                        name: "Head".to_string(),
+                        slots: 1,
+                        structure: 1,
+                        armor: 1,
+                        rear_armor: Option::None,
+                        components: vec![],
+                    },
+                    Location {
+                        name: "Center Torso".to_string(),
+                        slots: 3,
+                        structure: 3,
+                        armor: 3,
+                        rear_armor: Option::None,
+                        components: vec![],
+                    },
+                    Location {
+                        name: "Left Torso".to_string(),
+                        slots: 2,
+                        structure: 2,
+                        armor: 2,
+                        rear_armor: Option::None,
+                        components: vec![],
+                    },
+                    Location {
+                        name: "Right Torso".to_string(),
+                        slots: 2,
+                        structure: 2,
+                        armor: 2,
+                        rear_armor: Option::None,
+                        components: vec![],
+                    },
+                    Location {
+                        name: "Left Arm".to_string(),
+                        slots: 2,
+                        structure: 1,
+                        armor: 1,
+                        rear_armor: Option::None,
+                        components: vec![],
+                    },
+                    Location {
+                        name: "Right Arm".to_string(),
+                        slots: 2,
+                        structure: 1,
+                        armor: 1,
+                        rear_armor: Option::None,
+                        components: vec![],
+                    },
+                    Location {
+                        name: "Left Leg".to_string(),
+                        slots: 2,
+                        structure: 1,
+                        armor: 1,
+                        rear_armor: Option::None,
+                        components: vec![],
+                    },
+                    Location {
+                        name: "Right Leg".to_string(),
+                        slots: 2,
+                        structure: 1,
+                        armor: 1,
+                        rear_armor: Option::None,
+                        components: vec![],
+                    },
+                ],
+                MechConfig::BipedOmni => todo!(),
+                MechConfig::Quad => todo!(),
+                MechConfig::QuadOmni => todo!(),
+                MechConfig::QuadVee => todo!(),
+                MechConfig::QuadVeeOmni => todo!(),
+                MechConfig::Unknown => todo!(),
+            };
             Ok(UnitType::Mech(BattleMech {
                 config,
                 chassis: match self.entries.get(MECH_CHASSIS) {
@@ -75,11 +164,74 @@ impl TryInto<UnitType> for FileImport {
                     Some(FileEntry::Single(model)) => model.to_string(),
                     _ => "Unknown".to_string(),
                 },
-                myomer: todo!(),
-                structure: todo!(),
-                locations: todo!(),
-                mass: todo!(),
-                armor: todo!(),
+                myomer: match self.entries.get(MECH_MYOMER) {
+                    Some(FileEntry::Single(myomer)) => myomer.to_string(),
+                    _ => "Unknown".to_string(),
+                },
+                structure: match self.entries.get(MECH_STRUCTURE) {
+                    Some(FileEntry::Single(structure)) => {
+                        if structure.contains("Endo") {
+                            match tech_base {
+                                ChassisTech::Single(tech_base) => Structure::EndoSteel(tech_base),
+                                ChassisTech::Mixed(tech_base) if structure.contains("Clan") => {
+                                    Structure::EndoSteel(TechBase::Clan)
+                                }
+                                _ => {
+                                    println!(
+                                        "Assuming Inner Sphere Endo Steel structure: {:#?}, {:#?}",
+                                        structure, tech_base
+                                    );
+                                    Structure::EndoSteel(TechBase::InnerSphere)
+                                }
+                            }
+                        } else {
+                            match tech_base {
+                                ChassisTech::Single(tech_base) => Structure::Standard(tech_base.clone()),
+                                ChassisTech::Mixed(tech_base) if structure.contains("Clan") => {
+                                    Structure::Standard(TechBase::Clan)
+                                }
+                                _ => Structure::Standard(TechBase::InnerSphere),
+                            }
+                        }
+                    }
+                    _ => Structure::Standard(TechBase::InnerSphere),
+                },
+                locations: locations,
+                mass: match self.entries.get("mass") {
+                    Some(FileEntry::Single(mass)) => mass.parse().unwrap_or(0),
+                    _ => 0,
+                },
+                armor: match self.entries.get("armor") {
+                    Some(FileEntry::Single(armor)) => {
+                        let tech = if armor.contains("Clan") {
+                            TechBase::Clan
+                        } else if armor.contains("Inner Sphere") {
+                            TechBase::InnerSphere
+                        } else {
+                            match tech_base {
+                                ChassisTech::Single(tech_base_tech) => tech_base_tech.clone(),
+                                ChassisTech::Mixed(tech_base_tech) => tech_base_tech,
+                                _ => TechBase::InnerSphere,
+                            }
+                        };
+                        if armor.contains("Ferro") {
+                            if armor.contains("Heavy") {
+                                Armor::HeavyFerroFibrous(tech)
+                            } else if armor.contains("Stealth") {
+                                Armor::Stealth(tech)
+                            } else if armor.contains("Lamellor") {
+                                Armor::FerroLamellor(tech)
+                            } else {
+                                Armor::FerroFibrous(tech)
+                            }
+                        } else if armor.contains("Reactive") {
+                            Armor::Reactive(tech)
+                        } else {
+                            Armor::Standard(tech)
+                        }
+                    }
+                    _ => Armor::Standard(TechBase::InnerSphere),
+                },
             }))
         } else {
             Err(UnitConversionError("Invalid mech"))
@@ -87,6 +239,29 @@ impl TryInto<UnitType> for FileImport {
     }
 }
 
+fn load_location(name: &str, fi: FileImport) -> Location {
+    let slots = match fi.entries.get(&format!("{} slots", name)) {
+        Some(FileEntry::Single(s)) => s.parse().unwrap_or(0),
+        _ => 0,
+    };
+    let structure = match fi.entries.get(&format!("{} structure", name)) {
+        Some(FileEntry::Single(s)) => s.parse().unwrap_or(0),
+        _ => 0,
+    };
+    let armor = match fi.entries.get(&format!("{} armor", name)) {
+        Some(FileEntry::Single(s)) => s.parse().unwrap_or(0),
+        _ => 0,
+    };
+    let components = vec![]; // Components would be parsed similarly
+    Location {
+        name: name.to_string(),
+        slots,
+        structure,
+        armor,
+        rear_armor: Option::None,
+        components,
+    }
+}
 #[derive(Debug)]
 pub enum FileEntry {
     Single(String),
@@ -163,7 +338,11 @@ fn parse_file(f: &fs::DirEntry, read: &mut i32) {
     let file_str = fs::read_to_string(f.path()).unwrap();
     if f.file_name().to_str().unwrap().ends_with(".mtf") {
         // println!("{}", file_str);
-        if let Some(_) = parse_mtf_file(file_str) {
+        if let Some(fi) = parse_mtf_file(file_str) {
+            match <FileImport as TryInto<UnitType>>::try_into(fi) {
+                Ok(unit) => println!("{:#?}", unit),
+                Err(e) => println!("Error converting file import to unit type. Error: {}", e.0),
+            }
             *read += 1
         }
     } else if f.file_name().to_str().unwrap().ends_with(".blk") {

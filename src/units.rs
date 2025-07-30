@@ -20,7 +20,7 @@ pub enum VehicleType {
 #[derive(Debug)]
 pub struct Unit {
     unit_type: UnitType,
-    facing: Facing, 
+    facing: Facing,
     position: Hex,
 }
 
@@ -47,7 +47,7 @@ pub enum UnitType {
     WarShip(WarShip),
     #[cfg(feature = "aerospace")]
     SpaceStation(SpaceStation),
-    Invalid
+    Invalid,
 }
 
 // impl Vehicle for Unit {
@@ -79,18 +79,19 @@ impl Unit {
 
 #[derive(Debug)]
 pub struct Location {
-    name: String,
-    slots: i8,
-    structure: i8,
-    armor: i8,
-    components: Vec<Component>,
+    pub name: String,
+    pub slots: i8,
+    pub structure: i8,
+    pub armor: i8,
+    pub rear_armor: Option<i8>,
+    pub components: Vec<Component>,
 }
 
 #[derive(Debug)]
 pub struct Component {
     name: String,
     weight: f32,
-    slots: i8
+    slots: i8,
 }
 
 #[derive(Debug)]
@@ -101,15 +102,20 @@ pub enum MechConfig {
     QuadOmni,
     QuadVee,
     QuadVeeOmni,
-    Unknown
+    Unknown,
 }
 
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum TechBase {
     Clan,
     InnerSphere,
 }
 
+#[derive(Debug)]
+pub enum ChassisTech {
+    Single(TechBase),
+    Mixed(TechBase),
+}
 #[derive(Debug)]
 pub enum Structure {
     Standard(TechBase),
@@ -117,15 +123,24 @@ pub enum Structure {
 }
 
 #[derive(Debug)]
+pub enum Armor {
+    Standard(TechBase),
+    FerroFibrous(TechBase),
+    HeavyFerroFibrous(TechBase),
+    Stealth(TechBase),
+    FerroLamellor(TechBase),
+    Reactive(TechBase),
+}
+#[derive(Debug)]
 pub struct BattleMech {
     pub chassis: String,
     pub model: String,
     pub mass: i8,
     pub structure: Structure,
     pub myomer: String,
-    pub armor: String,
+    pub armor: Armor,
     pub locations: Vec<Location>,
-    pub config: MechConfig
+    pub config: MechConfig,
 }
 
 #[cfg(feature = "protomech")]
@@ -141,7 +156,6 @@ pub struct Vehicle {
     pub vehicle_type: VehicleType,
     pub movement_mode: MoveType,
 }
-
 
 #[cfg(feature = "infantry")]
 #[derive(Debug)]
