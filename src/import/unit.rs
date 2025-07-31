@@ -57,11 +57,23 @@ impl TryInto<UnitType> for FileImport {
         if self.entries.contains_key(MECH_CONFIG) {
             let config = match self.entries.get(MECH_CONFIG) {
                 Some(FileEntry::Single(cfg)) if cfg == "Biped" => MechConfig::Biped,
-                Some(FileEntry::Single(cfg)) if cfg == "Biped Omnimech" => MechConfig::BipedOmni,
-                Some(FileEntry::Single(cfg)) if cfg == "Biped" => MechConfig::Quad,
-                Some(FileEntry::Single(cfg)) if cfg == "Biped Omnimech" => MechConfig::QuadOmni,
+                Some(FileEntry::Single(cfg))
+                    if cfg == "Biped Omnimech" || cfg == "Biped OmniMek" =>
+                {
+                    MechConfig::BipedOmni
+                }
+                Some(FileEntry::Single(cfg)) if cfg == "Quad" => MechConfig::Quad,
+                Some(FileEntry::Single(cfg)) if cfg == "Quad Omnimech" => MechConfig::QuadOmni,
                 Some(FileEntry::Single(cfg)) if cfg == "Biped" => MechConfig::QuadVee,
                 Some(FileEntry::Single(cfg)) if cfg == "Biped Omnimech" => MechConfig::QuadVeeOmni,
+                Some(FileEntry::Single(cfg)) if cfg == "Tripod" => MechConfig::Tripod,
+                Some(FileEntry::Single(cfg)) if cfg == "Tripod Omnimech" => MechConfig::TripodOmni,
+                Some(FileEntry::Single(cfg)) if cfg == "LAM" => MechConfig::LAM,
+                Some(FileEntry::Single(cfg)) => {
+                    println!("Unknown Config: {}", cfg.clone());
+                    // let err_msg: &'static str = format!("Unknown Mech Config: {}", cfg).clone().as_str();
+                    return Err(UnitConversionError("Unknown Mech Config"));
+                }
                 Some(_) => MechConfig::Unknown,
                 None => MechConfig::Unknown,
             };
@@ -82,77 +94,89 @@ impl TryInto<UnitType> for FileImport {
             };
             let locations = match config {
                 MechConfig::Biped => vec![
-                    Location {
-                        name: "Head".to_string(),
-                        slots: 1,
-                        structure: 1,
-                        armor: 1,
-                        rear_armor: Option::None,
-                        components: vec![],
-                    },
-                    Location {
-                        name: "Center Torso".to_string(),
-                        slots: 3,
-                        structure: 3,
-                        armor: 3,
-                        rear_armor: Option::None,
-                        components: vec![],
-                    },
-                    Location {
-                        name: "Left Torso".to_string(),
-                        slots: 2,
-                        structure: 2,
-                        armor: 2,
-                        rear_armor: Option::None,
-                        components: vec![],
-                    },
-                    Location {
-                        name: "Right Torso".to_string(),
-                        slots: 2,
-                        structure: 2,
-                        armor: 2,
-                        rear_armor: Option::None,
-                        components: vec![],
-                    },
-                    Location {
-                        name: "Left Arm".to_string(),
-                        slots: 2,
-                        structure: 1,
-                        armor: 1,
-                        rear_armor: Option::None,
-                        components: vec![],
-                    },
-                    Location {
-                        name: "Right Arm".to_string(),
-                        slots: 2,
-                        structure: 1,
-                        armor: 1,
-                        rear_armor: Option::None,
-                        components: vec![],
-                    },
-                    Location {
-                        name: "Left Leg".to_string(),
-                        slots: 2,
-                        structure: 1,
-                        armor: 1,
-                        rear_armor: Option::None,
-                        components: vec![],
-                    },
-                    Location {
-                        name: "Right Leg".to_string(),
-                        slots: 2,
-                        structure: 1,
-                        armor: 1,
-                        rear_armor: Option::None,
-                        components: vec![],
-                    },
+                    load_location("Head", &self),
+                    load_location("Center Torso", &self),
+                    load_location("Left Torso", &self),
+                    load_location("Right Torso", &self),
+                    load_location("Left Arm", &self),
+                    load_location("Right Arm", &self),
+                    load_location("Left Leg", &self),
+                    load_location("Right Leg", &self),
                 ],
-                MechConfig::BipedOmni => todo!(),
-                MechConfig::Quad => todo!(),
-                MechConfig::QuadOmni => todo!(),
-                MechConfig::QuadVee => todo!(),
-                MechConfig::QuadVeeOmni => todo!(),
-                MechConfig::Unknown => todo!(),
+                MechConfig::BipedOmni => vec![
+                    load_location("Head", &self),
+                    load_location("Center Torso", &self),
+                    load_location("Left Torso", &self),
+                    load_location("Right Torso", &self),
+                    load_location("Left Arm", &self),
+                    load_location("Right Arm", &self),
+                    load_location("Left Leg", &self),
+                    load_location("Right Leg", &self),
+                ],
+                MechConfig::LAM => vec![
+                    load_location("Head", &self),
+                    load_location("Center Torso", &self),
+                    load_location("Left Torso", &self),
+                    load_location("Right Torso", &self),
+                    load_location("Left Arm", &self),
+                    load_location("Right Arm", &self),
+                    load_location("Left Leg", &self),
+                    load_location("Right Leg", &self),
+                ],
+                MechConfig::Quad => vec![
+                    load_location("Head", &self),
+                    load_location("Center Torso", &self),
+                    load_location("Left Torso", &self),
+                    load_location("Right Torso", &self),
+                    load_location("Front Left Leg", &self),
+                    load_location("Front Right Leg", &self),
+                    load_location("Rear Left Leg", &self),
+                    load_location("Rear Right Leg", &self),
+                ],
+                MechConfig::QuadOmni => vec![
+                    load_location("Head", &self),
+                    load_location("Center Torso", &self),
+                    load_location("Left Torso", &self),
+                    load_location("Right Torso", &self),
+                    load_location("Front Left Leg", &self),
+                    load_location("Front Right Leg", &self),
+                    load_location("Rear Left Leg", &self),
+                    load_location("Rear Right Leg", &self),
+                ],
+                MechConfig::QuadVee => {
+                    println!("{:#?}", self);
+                    todo!()
+                }
+                MechConfig::QuadVeeOmni => {
+                    println!("{:#?}", self);
+                    todo!()
+                }
+                MechConfig::Tripod => vec![
+                    load_location("Head", &self),
+                    load_location("Center Torso", &self),
+                    load_location("Left Torso", &self),
+                    load_location("Right Torso", &self),
+                    load_location("Left Arm", &self),
+                    load_location("Right Arm", &self),
+                    load_location("Left Leg", &self),
+                    load_location("Right Leg", &self),
+                    load_location("Center Leg", &self),
+                ],
+                MechConfig::TripodOmni => vec![
+                    load_location("Head", &self),
+                    load_location("Center Torso", &self),
+                    load_location("Left Torso", &self),
+                    load_location("Right Torso", &self),
+                    load_location("Left Arm", &self),
+                    load_location("Right Arm", &self),
+                    load_location("Left Leg", &self),
+                    load_location("Right Leg", &self),
+                    load_location("Center Leg", &self),
+                ],
+                MechConfig::Unknown => {
+                    println!("{:#?}", self);
+                    todo!()
+                }
             };
             Ok(UnitType::Mech(BattleMech {
                 config,
@@ -186,7 +210,9 @@ impl TryInto<UnitType> for FileImport {
                             }
                         } else {
                             match tech_base {
-                                ChassisTech::Single(tech_base) => Structure::Standard(tech_base.clone()),
+                                ChassisTech::Single(tech_base) => {
+                                    Structure::Standard(tech_base.clone())
+                                }
                                 ChassisTech::Mixed(tech_base) if structure.contains("Clan") => {
                                     Structure::Standard(TechBase::Clan)
                                 }
@@ -239,18 +265,25 @@ impl TryInto<UnitType> for FileImport {
     }
 }
 
-fn load_location(name: &str, fi: FileImport) -> Location {
-    let slots = match fi.entries.get(&format!("{} slots", name)) {
-        Some(FileEntry::Single(s)) => s.parse().unwrap_or(0),
+fn load_location(name: &str, fi: &FileImport) -> Location {
+    let slots = match fi.entries.get(name) {
+        Some(FileEntry::Block(s)) => s.entries.len() as i8,
         _ => 0,
     };
     let structure = match fi.entries.get(&format!("{} structure", name)) {
         Some(FileEntry::Single(s)) => s.parse().unwrap_or(0),
         _ => 0,
     };
-    let armor = match fi.entries.get(&format!("{} armor", name)) {
+    let armor = match fi.entries.get(LOCATION_LOOKUPS[name].armor) {
         Some(FileEntry::Single(s)) => s.parse().unwrap_or(0),
         _ => 0,
+    };
+    let rear_armor = match LOCATION_LOOKUPS[name].has_rear_armor {
+        true => match fi.entries.get(LOCATION_LOOKUPS[name].rear_armor) {
+            Some(FileEntry::Single(s)) => Some(s.parse().unwrap_or(0)),
+            _ => None,
+        },
+        false => None,
     };
     let components = vec![]; // Components would be parsed similarly
     Location {
@@ -258,7 +291,7 @@ fn load_location(name: &str, fi: FileImport) -> Location {
         slots,
         structure,
         armor,
-        rear_armor: Option::None,
+        rear_armor,
         components,
     }
 }
@@ -323,6 +356,7 @@ fn read_dir(folder: &str) -> i32 {
                 // println!("{:?}", f.file_name());
                 if f.metadata().unwrap().is_file() {
                     // read += 1;
+                    println!("Reading file: {:?}", f.file_name());
                     parse_file(&f, &mut read);
                 } else if f.metadata().unwrap().is_dir() {
                     read += read_dir(f.path().to_str().unwrap());
@@ -340,7 +374,7 @@ fn parse_file(f: &fs::DirEntry, read: &mut i32) {
         // println!("{}", file_str);
         if let Some(fi) = parse_mtf_file(file_str) {
             match <FileImport as TryInto<UnitType>>::try_into(fi) {
-                Ok(unit) => println!("{:#?}", unit),
+                Ok(unit) => (), // println!("{:#?}", unit),
                 Err(e) => println!("Error converting file import to unit type. Error: {}", e.0),
             }
             *read += 1
@@ -392,7 +426,7 @@ fn parse_mtf_file(file_str: String) -> Option<FileImport> {
             }
         }
     }
-    println!("{:#?}", file);
+    // println!("{:#?}", file);
     Some(file)
 }
 

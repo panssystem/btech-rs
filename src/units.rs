@@ -102,6 +102,9 @@ pub enum MechConfig {
     QuadOmni,
     QuadVee,
     QuadVeeOmni,
+    Tripod,
+    TripodOmni,
+    LAM,
     Unknown,
 }
 
